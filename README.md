@@ -74,7 +74,7 @@ Snapshots are cross-compatible remotely between different VG accounts / byo serv
 
 ### Speech services not working after restoration?
 
-Cognigy decided to safeguard Speech services credentials like treasures from Indiana Jones <i>(and neglect the Basic Authentication of bot webhooks / carrier endpoints entirely)</i>. Therefore keys of speech services are not returned in full by their API. After speech services are pulled/restored remotely, you will have to manually update their API key to the correct one.
+Cognigy decided to safeguard Speech services credentials like treasures from Indiana Jones <i>(and neglect the Basic Authentication of bot webhooks / carrier endpoints entirely)</i>. Therefore keys of speech services are not returned in full by their API. After speech services are pulled/restored remotely, you will have to manually update their API keys to the correct ones.
 
 ### Err... "obroutes" ?
 
