@@ -1,0 +1,47 @@
+{
+  "name": "cognigy-vg",
+  "author": {
+    "name": "tgbv",
+    "url": "https://github.com/tgbv"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tgbv/cognigy-vg.git"
+  },
+  "version": "1.0.0",
+  "description": "CLI to interact with Cognigy Voice Gateway.",
+  "keywords": [
+    "cli", "cognigy", "cognigy-vg", "voice-gateway"
+  ],
+  "engines": {
+    "node": ">=18",
+    "npm": ">=9"
+  },
+  "files": [
+    "build",
+    "package-lock.json",
+    "package.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "bin": {
+    "cognigy-vg": "./build/index.js"
+  },
+  "scripts": {
+    "cognigy-vg-dev": "npx ts-node ./src/index.ts",
+    "build-local": "npx tsc && npm pack && npm i -g cognigy-vg*"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/lodash": "^4.17.7",
+    "@types/prompts": "^2.4.9",
+    "ts-node": "^10.9.2"
+  },
+  "dependencies": {
+    "axios": "^1.7.7",
+    "commander": "^12.1.0",
+    "fs-extra": "^11.2.0",
+    "lodash": "^4.17.21",
+    "prompts": "^2.4.2"
+  }
+}
