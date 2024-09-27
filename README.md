@@ -8,18 +8,12 @@ Features include and are not limited to:
 - Pulling VG resources locally.
 - Pushing VG resources remotely.
 
-<br>
-
 <img src="https://raw.githubusercontent.com/tgbv/cognigy-vg/refs/heads/dev/demos/create-snap.gif">
-
-<br>
 
 <img src="https://raw.githubusercontent.com/tgbv/cognigy-vg/refs/heads/dev/demos/restore-snap.gif">
 
-<br>
-
-
 ### Quick setup
+
 ```bash
 $ npm i -g cognigy-vg
 
@@ -27,6 +21,7 @@ $ cognigy-vg init
 ```
 
 ### Commands overview
+
 ```bash
 Usage: cognigy-vg [options] [command]
 
