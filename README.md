@@ -8,9 +8,9 @@ Features include and are not limited to:
 - Pulling VG resources locally.
 - Pushing VG resources remotely.
 
-<img src="https://raw.githubusercontent.com/tgbv/cognigy-vg/refs/heads/dev/demos/create-snap.gif">
+<img src="https://raw.githubusercontent.com/tgbv/cognigy-vg/refs/heads/main/demos/create-snap.gif">
 
-<img src="https://raw.githubusercontent.com/tgbv/cognigy-vg/refs/heads/dev/demos/restore-snap.gif">
+<img src="https://raw.githubusercontent.com/tgbv/cognigy-vg/refs/heads/main/demos/restore-snap.gif">
 
 ### Quick setup
 
