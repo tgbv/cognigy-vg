@@ -1,6 +1,6 @@
 # cognigy-vg
 
-CLI to interact with [Cognigy Voice Gateway](https://www.cognigy.com/platform/cognigy-voice-gateway) product. Not affiliated with Cognigy or its subsidiaries.
+CLI to interact with <a href="https://www.cognigy.com/platform/cognigy-voice-gateway" target="_blank">Cognigy Voice Gateway</a> product. Not affiliated with Cognigy or its subsidiaries.
 
 Features include and are not limited to:
 - Creating local snapshots (.csnap like).
@@ -10,11 +10,11 @@ Features include and are not limited to:
 
 <br>
 
-<img src="./demos/create-snap.gif">
+<img src="https://raw.githubusercontent.com/tgbv/cognigy-vg/refs/heads/dev/demos/create-snap.gif">
 
 <br>
 
-<img src="./demos/restore-snap.gif">
+<img src="https://raw.githubusercontent.com/tgbv/cognigy-vg/refs/heads/dev/demos/restore-snap.gif">
 
 <br>
 
@@ -74,8 +74,8 @@ Snapshots are cross-compatible remotely between different VG accounts / byo serv
 
 ### Speech services not working after restoration?
 
-Cognigy decided to safeguard Speech services credentials like treasures from Indianna Jones <i>(and neglect the Basic Authentication of bot webhooks / carrier endpoints entirely)</i>. Therefore keys of speech services are not returned in full by their API. After speech services are pulled/restored remotely, you will have to manually update their API key to the correct one.
+Cognigy decided to safeguard Speech services credentials like treasures from Indiana Jones <i>(and neglect the Basic Authentication of bot webhooks / carrier endpoints entirely)</i>. Therefore keys of speech services are not returned in full by their API. After speech services are pulled/restored remotely, you will have to manually update their API key to the correct one.
 
 ### Err... "obroutes" ?
 
-Term 'obroutes' stands for 'Outbound calling routes'. It references the entities from section [Outbound Call Routing](https://docs.cognigy.com/voice-gateway/webapp/outbound-call-routing/). It's a naming I adopted because the technical term Cognigy uses for outbound calling routes is 'Least cost routes' which doesn't mean a darn thing. LCR sounds like banned meth naming.
+Term 'obroutes' stands for 'Outbound calling routes'. It references the entities from section <a href="https://docs.cognigy.com/voice-gateway/webapp/outbound-call-routing/" target="_blank">Outbound Call Routing</a>. It's a naming I adopted because the technical term Cognigy uses for outbound calling routes is 'Least cost routes' which doesn't mean a darn thing. LCR sounds like banned meth naming.
