@@ -85,7 +85,7 @@ export default async ({ AU }) => {
   if(btSplit.length > 0) {
     const payload = JSON.parse(Buffer.from(btSplit[1], 'base64').toString('utf8'));
     console.log('WARNING:', 'supplied token will expire in', payload.exp - (Date.now() / 1000) , 'second(s)');
-    console.log("You will need to regenerate it. You can do it directly by modifying config file after it's done.");
+    console.log("You will need to regenerate it. You can do so via 'cognigy-vg set token' command.");
   }
 
   const { accountSid, serviceProviderSid } = await prompts([
