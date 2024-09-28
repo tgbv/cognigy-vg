@@ -7,6 +7,7 @@ import pullCommand from "./commands/pull";
 import pushCommand from "./commands/push";
 import cloneCommand from "./commands/clone";
 import snapshotCommand from "./commands/snapshot";
+import setToken from "./commands/set-token";
 
 const resourceTypesArg = new Argument('<resoureType>', 'Resource type to pull from API.')
   .choices(['app', 'carrier', 'speech', 'phone', 'obroutes']);
@@ -25,6 +26,13 @@ program
   .description('Guided way to initialize new configuration file.')
   .option('-AU', 'Allows unauthorized SSL certificates. Useful if your machine is behind VPN.')
   .action(initCommand);
+
+program
+  .command('set token')
+  .description('Quickly set workspace API key/bearer token.')
+  .option('--configFile <string>', 'Configuration file path.', './config.json')
+  .option('-AU', 'Allows unauthorized SSL certificates. Useful if your machine is behind VPN.')
+  .action(setToken);
 
 program
   .command('pull')
