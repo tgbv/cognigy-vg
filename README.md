@@ -25,7 +25,7 @@ $ cognigy-vg init
 ```bash
 Usage: cognigy-vg [options] [command]
 
-Tools to interact with Cognigy Voice Gateway.
+CLI to interact with Cognigy Voice Gateway.
 
 Options:
   -V, --version                                      output the version number
@@ -33,6 +33,7 @@ Options:
 
 Commands:
   init [options]                                     Guided way to initialize new configuration file.
+  set [options] <token>                              Quickly set workspace API key/bearer token.
   pull [options] <resoureType> <resourceIdentifier>  Pull one resource from API to disk. Can be "app", "carrier", "speech", "phone",
                                                      "obroutes".
   push [options] <resoureType> <resourceIdentifier>  Push one resource from disk to API. Can be "app", "carrier", "speech", "phone".
