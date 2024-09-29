@@ -8,13 +8,14 @@ import pushCommand from "./commands/push";
 import cloneCommand from "./commands/clone";
 import snapshotCommand from "./commands/snapshot";
 import setToken from "./commands/set-token";
+import { loadJsonFile } from "./lib";
 
 const resourceTypesArg = new Argument('<resoureType>', 'Resource type to pull from API.')
   .choices(['app', 'carrier', 'speech', 'phone', 'obroutes']);
 
 const program = new Command();
 
-const packageJson = JSON.parse(readFileSync('./package.json').toString());
+const packageJson = loadJsonFile(`${__dirname}/../package.json`);
 
 program
   .name(packageJson.name)
