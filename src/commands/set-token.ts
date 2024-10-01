@@ -23,9 +23,12 @@ export default async (_, { AU, configFile }) => {
     hint: 'UUIDv4 or JWT',
     validate: (value) => new Promise(accept => {
       getAccounts(config.apiFqdn, value).then(res => {
+        if(!res.find(o => (o.account_sid === config.accountSid))) {
+          return accept(`Token does not have privileges to access Account: ${config.accountSid}`);
+        }
         getServiceProviders(config.apiFqdn, value).then(res => {
-          if(res.length === 0) {
-            accept('This token cannot be used with any ServiceProvider.');
+          if(!res.find(o => (o.service_provider_sid === config.serviceProviderSid))) {
+            return accept(`Token does not have privileges to access ServiceProvider: ${config.serviceProviderSid}`);
           }
           accept(true)
         }).catch(() => accept('Token does not have privileges to retrieve ServiceProviders.'));
