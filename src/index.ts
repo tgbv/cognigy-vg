@@ -9,6 +9,7 @@ import cloneCommand from "./commands/clone";
 import snapshotCommand from "./commands/snapshot";
 import setToken from "./commands/set-token";
 import { loadJsonFile } from "./lib";
+import createCallCommand from "./commands/create-call";
 
 const resourceTypesArg = new Argument('<resoureType>', 'Resource type to pull from API.')
   .choices(['app', 'carrier', 'speech', 'phone', 'obroutes']);
@@ -75,5 +76,13 @@ program
   .option('-AU', 'Allows unauthorized SSL certificates. Useful if your machine is behind VPN.')
   .option('-y', 'Skip confirmations.')
   .action(snapshotCommand);
+
+program
+  .command('create call')
+  .description('Guided way to create an outbound call.')
+  .option('--configFile <string>', 'Configuration file path.', './config.json')
+  .option('-AU', 'Allows unauthorized SSL certificates. Useful if your machine is behind VPN.')
+  .action(createCallCommand)
+
   
 program.parse();

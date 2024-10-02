@@ -39,6 +39,7 @@ Commands:
   push [options] <resoureType> <resourceIdentifier>  Push one resource from disk to API. Can be "app", "carrier", "speech", "phone".
   clone [options]                                    Clone locally VG app/service provider with all dependencies.
   snapshot [options] <action> [snapshotName]         Create or restore a snapshot remotely.
+  create [options] <call>                            Guided way to create an outbound call.
   help [command]                                     display help for command
 ```
 

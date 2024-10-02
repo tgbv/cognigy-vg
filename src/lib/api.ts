@@ -37,7 +37,30 @@ export default class API {
     });
   }
 
+  /**
+   * 
+   * @param from 
+   * @param to 
+   * @param applicationSid 
+   * @param tag
+   * @returns 
+   */
+  createCall = async (from: string, to: string, applicationSid: string, tag: Record<string, any>) => {
+    const payload: Record<string, any> = {
+      application_sid: applicationSid,
+      from,
+      to: {
+        type: "phone",
+        number: to
+      },
+      tag,
+      headers: {
+        'P-Asserted-Identity': `<sip:${from}@cognigy-vg>`
+      }
+    };
 
+    return this.axios.post(`/v1/Accounts/${this.accountSid}/Calls`, payload);
+  }
 
   /**
    * 
