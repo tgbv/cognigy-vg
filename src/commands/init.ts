@@ -50,7 +50,7 @@ export default async ({ AU }) => {
 
           const { data, headers } = await axios.get(`https://${value}`);
 
-          if(data === 'OK' && headers['ratelimit-policy']) {
+          if(data === 'OK') {
             return true;
           }
         } catch(e) {
