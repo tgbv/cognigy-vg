@@ -3,6 +3,7 @@ import { confirm, ILocalConfig, loadJsonFile } from "../lib";
 import API from "../lib/api";
 import { createCipheriv, randomBytes, createDecipheriv } from "crypto";
 import { cloneDeep } from "lodash";
+import util from "util";
 
 /**
  * 
@@ -26,14 +27,8 @@ const create = async (api: API, snapEncryptionKey: string, snapshotName: string)
   );
 
   const phones = await api.getRemotePhones();
-  const obRouters = await api.getRemoteObRouters();
-  await Promise.all(
-    obRouters.map(
-      o => api.getRemoteObRoutes(o.lcr_sid).then(res => {
-        o.routes = res;
-      })
-    )
-  );
+  const obRouter = await api.getRemoteObRouter();
+  obRouter.routes = await api.getRemoteObRoutes(obRouter.lcr_sid);
 
   //// encryption & storage part
 
@@ -42,7 +37,10 @@ const create = async (api: API, snapEncryptionKey: string, snapshotName: string)
     apps,
     carriers,
     phones,
-    obRouters
+    obRouter,
+    snapMeta: {
+      version: 2
+    }
   });
 
   const iv = randomBytes(12);
@@ -68,14 +66,13 @@ const create = async (api: API, snapEncryptionKey: string, snapshotName: string)
 
 }
 
-
 /**
  * 
- * @param api 
- * @param snapEncryptionKey 
  * @param snapshotName 
+ * @param config 
+ * @returns 
  */
-const restore = async (api: API, config: ILocalConfig, snapshotName: string) => {
+const decryptSnap = (snapshotName: string, config: ILocalConfig) => {
   const vgSnapFile = readFileSync(`${snapshotName}`);
 
   const iv = Buffer.alloc(12);
@@ -95,9 +92,35 @@ const restore = async (api: API, config: ILocalConfig, snapshotName: string) => 
     decipher.update(vgSnapFile.subarray(28)),
     decipher.final()
   ]);
-  // writeFileSync('./decrypted.json', vgSnapRaw);
 
   const vgSnap = JSON.parse(vgSnapRaw.toString('utf8'));
+  
+  return vgSnap;
+}
+
+
+/**
+ * 
+ * @param api 
+ * @param config 
+ * @param snapshotName 
+ * @param force 
+ * @returns 
+ */
+const restore = async (api: API, config: ILocalConfig, snapshotName: string, force?: boolean) => {
+  const vgSnap = decryptSnap(snapshotName, config);
+
+  if(vgSnap.snapMeta?.version !== 2) {
+    console.log('WARN:', 'Snap version', vgSnap.snapMeta?.version, '!==', 2);
+
+    if(force) {
+      console.log('--force flag is set to true. Continuing...');
+    } else {
+      console.log('Please inspect the snapshot for breaking changes of obRoutes using "snapshot inspect" command, or use an older version of this CLI package to restore it.');
+      console.log('If you wish to carry on even though things may break remotely, supply the --force flag.');
+      return;
+    }
+  }
 
   console.log('Flushing remote configuration ...');
 
@@ -187,42 +210,50 @@ const restore = async (api: API, config: ILocalConfig, snapshotName: string) => 
     })
   );
 
-  // create obroutes aka lcroutes aka wakanada...
-  await Promise.all(
-    vgSnap.obRouters.map(obRouterObject => {
-      const clonedObject = cloneDeep(obRouterObject);
-      // clonedObject.default_carrier_set_entry_sid = vgSnap.carriers.find(o => o.voip_carrier_sid === clonedObject.default_carrier_set_entry_sid)?.new_voip_carrier_sid || null;
-      clonedObject.service_provider_sid = config.serviceProviderSid;
-      clonedObject.account_sid = config.accountSid;
-      delete clonedObject.routes;
-      delete clonedObject.number_routes;
-      delete clonedObject.default_carrier_set_entry_sid;
+  // create obroutes aka lcroutes
+  const clonedObRouterObject = cloneDeep(vgSnap.obRouter);
+  clonedObRouterObject.service_provider_sid = config.serviceProviderSid;
+  clonedObRouterObject.account_sid = config.accountSid;
+  delete clonedObRouterObject.routes;
+  delete clonedObRouterObject.number_routes;
+  delete clonedObRouterObject.default_carrier_set_entry_sid;
 
-      return api.createRemoteObRouter(clonedObject)
-        .then(({ sid }) => {
-          const routes = cloneDeep(obRouterObject.routes);
-          routes.forEach(o => {
-            o.lcr_route_sid	= '';
-            o.lcr_sid = '';
-            o.lcr_carrier_set_entries.forEach(ocse => {
-              ocse.lcr_route_sid = '';
-              ocse.voip_carrier_sid = vgSnap.carriers.find(c => c.voip_carrier_sid === ocse.voip_carrier_sid).new_voip_carrier_sid;
-            })
-          })
-
-          return api.putRemoteObRouterRoutes(sid, routes);
+  await api.createRemoteObRouter(clonedObRouterObject)
+    .then(({ sid }) => {
+      const routes = cloneDeep(vgSnap.obRouter.routes);
+      routes.forEach(o => {
+        o.lcr_route_sid	= '';
+        o.lcr_sid = '';
+        o.lcr_carrier_set_entries.forEach(ocse => {
+          ocse.lcr_route_sid = '';
+          ocse.voip_carrier_sid = vgSnap.carriers.find(c => c.voip_carrier_sid === ocse.voip_carrier_sid).new_voip_carrier_sid;
         })
+      })
 
-    })
-  );
+      return api.putRemoteObRouterRoutes(sid, routes);
+    });
+
 
   console.log('Done restoring snapshot remotely!');
 }
 
 /**
  * 
+ * @param config 
+ * @param snapshotName 
  */
-export default async (action: 'create' | 'restore', snapshotName: string | null, { y, configFile, AU }) => {
+const inspect = async (config: ILocalConfig, snapshotName: string) => {
+  const vgSnap = decryptSnap(snapshotName, config);
+
+  console.log(
+    util.inspect(vgSnap, {showHidden: false, depth: null, colors: true})
+  );
+}
+
+/**
+ * 
+ */
+export default async (action: string, snapshotName: string | null, { y, configFile, AU }) => {
   if(action === 'restore' && !snapshotName) {
     console.log('"snapshotName" is needed when command is "restore"');
     return;
@@ -234,6 +265,7 @@ export default async (action: 'create' | 'restore', snapshotName: string | null,
   snapshotName = snapshotName ?? await api.getSnapshotName();
 
   if (
+    action !== 'inspect' &&
     !y && 
     !await confirm(
       'This will overwrite ' + 
@@ -244,19 +276,9 @@ export default async (action: 'create' | 'restore', snapshotName: string | null,
     return;
   }
 
-  /**
-   * 
-   * 
-   */
-  if(action === 'create') {
-    return create(api, config.snapEncryptionKey, snapshotName);
-  }
-
-  /**
-   * 
-   * 
-   */
-  if( action === 'restore' ) {
-    return restore(api, config, snapshotName);
+  switch(action) {
+    case 'create': return create(api, config.snapEncryptionKey, snapshotName);
+    case 'restore': return restore(api, config, snapshotName);
+    case 'inspect': return inspect(config, snapshotName);
   }
 }

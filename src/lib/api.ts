@@ -7,7 +7,7 @@ import { outputFileSync } from "fs-extra";
 export default class API {
   protected vgSpacePath: string;
   protected apiFqdn: string;
-  protected bearerToken: string;
+  protected serviceProviderToken: string;
   protected accountSid: string;
   protected serviceProviderSid: string;
   protected axios: AxiosInstance;
@@ -17,10 +17,10 @@ export default class API {
    * @param ILocalConfig 
    * @param allowUnauthorized 
    */
-  constructor({ vgSpacePath, apiFqdn, bearerToken, accountSid, serviceProviderSid }: ILocalConfig, allowUnauthorized: boolean) {
+  constructor({ vgSpacePath, apiFqdn, serviceProviderToken, accountSid, serviceProviderSid }: ILocalConfig, allowUnauthorized: boolean) {
     this.vgSpacePath = vgSpacePath;
     this.apiFqdn = apiFqdn;
-    this.bearerToken = bearerToken;
+    this.serviceProviderToken = serviceProviderToken;
     this.accountSid = accountSid;
     this.serviceProviderSid = serviceProviderSid;
 
@@ -28,12 +28,30 @@ export default class API {
       baseURL: `https://${this.apiFqdn}`,
       headers: {
         Accept: 'application/json',
-        Authorization: `Bearer ${this.bearerToken}`
+        Authorization: `Bearer ${this.serviceProviderToken}`
       },
       httpsAgent: new https.Agent({ rejectUnauthorized: !allowUnauthorized })
     });
-    this.axios.interceptors.request.use(config => {
-      return config;
+  }
+  
+  /**
+   * 
+   * @returns 
+   */
+  getRemoteAccountApiKeys = async () => {
+    const { data } = await this.axios.get<any[]>(`/v1/Accounts/${this.accountSid}/ApiKeys`);
+
+    return data;
+  }
+
+  /**
+   * 
+   * @returns 
+   */
+  createRemoteAccountApiKey = () => {
+    return this.axios.post(`/v1/ApiKeys`, {
+      account_sid: this.accountSid,
+      service_provider_sid: this.serviceProviderSid
     });
   }
 
@@ -45,7 +63,13 @@ export default class API {
    * @param tag
    * @returns 
    */
-  createCall = async (from: string, to: string, applicationSid: string, tag: Record<string, any>) => {
+  createCall = async (
+    from: string, 
+    to: string, 
+    applicationSid: string, 
+    tag: Record<string, any>,
+    applicationToken: string,
+  ) => {
     const payload: Record<string, any> = {
       application_sid: applicationSid,
       from,
@@ -59,7 +83,11 @@ export default class API {
       }
     };
 
-    return this.axios.post(`/v1/Accounts/${this.accountSid}/Calls`, payload);
+    return this.axios.post(`/v1/Accounts/${this.accountSid}/Calls`, payload, {
+      headers: {
+        Authorization: `Bearer ${applicationToken}`
+      }
+    });
   }
 
   /**
@@ -69,7 +97,7 @@ export default class API {
   getRemoteCarriers = async () => {
     const { data } = await this.axios.get<any[]>(`/v1/ServiceProviders/${this.serviceProviderSid}/VoipCarriers`);
 
-    return data;
+    return data.filter(({ account_sid }) => account_sid === this.accountSid);
   }
 
   /**
@@ -87,7 +115,7 @@ export default class API {
    * @returns 
    */
   getRemoteSpeechCredentials = async () => {
-    const { data } = await this.axios.get<any[]>(`/v1/ServiceProviders/${this.serviceProviderSid}/SpeechCredentials`);
+    const { data } = await this.axios.get<any[]>(`/v1/Accounts/${this.accountSid}/SpeechCredentials`);
 
     return data;
   }
@@ -99,7 +127,7 @@ export default class API {
   getRemotePhones = async () => {
     const { data } = await this.axios.get<any[]>(`/v1/ServiceProviders/${this.serviceProviderSid}/PhoneNumbers`);
 
-    return data;
+    return data.filter(({ account_sid }) => account_sid === this.accountSid);
   }
 
   /**
@@ -411,6 +439,15 @@ export default class API {
 
   }
 
+  /**
+   * 
+   * @returns 
+   */
+  getRemoteObRouter = async () => {
+    const routers = await this.getRemoteObRouters();
+
+    return routers.find(({ account_sid }) => account_sid === this.accountSid);
+  }
 
   /**
    * 

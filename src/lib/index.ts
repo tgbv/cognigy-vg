@@ -5,7 +5,8 @@ import { readFileSync } from "fs";
 export interface ILocalConfig {
   vgSpacePath: string,
   apiFqdn: string,
-  bearerToken: string,
+  accountToken: string,
+  serviceProviderToken: string,
   accountSid: string,
   serviceProviderSid: string,
   snapEncryptionKey: string

@@ -34,8 +34,10 @@ export default async ({ AU }) => {
     {
       type: 'text',
       name: 'snapEncryptionKey',
-      message: 'Snapshots encryption key. Is base64.',
-      initial: randomBytes(32).toString('base64')
+      message: 'Snapshots encryption key. Must be base64.',
+      initial: randomBytes(32).toString('base64'),
+      validate: (value) => Buffer.from(value, 'base64').toString().length === 0 ? 
+        'Please input valid base64 encoded data.' : true
     },
     {
       type: 'text',
@@ -61,44 +63,26 @@ export default async ({ AU }) => {
     },
   ], { onCancel: () => process.exit(0) });
 
-
-  const { bearerToken } = await prompts({
+  const { serviceProviderToken } = await prompts({
     type: 'text',
-    name: 'bearerToken',
-    message: 'Bearer token for authentication. Please consult: https://github.com/tgbv/cognigy-vg/tree/dev#using-the-right-bearer-token',
-    hint: 'UUIDv4 or JWT',
-    validate: (value) => new Promise(accept => {
-      getAccounts(apiFqdn, value).then(res => {
-        accounts = res;
-        getServiceProviders(apiFqdn, value).then(res => {
-          if(res.length === 0) {
-            accept('This token cannot be used with any ServiceProvider.');
-          }
-          serviceProviders = res;
-          accept(true)
-        }).catch(() => accept('Token does not have privileges to retrieve ServiceProviders.'));
-      }).catch(() => accept('Token does not have privileges to retrieve own Accounts.'));
-    })
+    name: 'serviceProviderToken',
+    message: 'Service Provider API Key',
+    hint: 'UUIDv4',
+    validate: async (value) => {
+      try {
+        serviceProviders = await getServiceProviders(apiFqdn, value);
+        if(serviceProviders.length === 0) {
+          return 'This token cannot be used with any ServiceProvider.';
+        }
+        accounts = await getAccounts(apiFqdn, value);
+        return true;
+      } catch(e) {
+        return 'Token does not have privileges to retrieve own Service Providers / Accounts, or network error occurred.';
+      }
+    }
   }, { onCancel: () => process.exit(0) });
 
-  const btSplit = bearerToken.split('.')
-  if(btSplit.length === 3) {
-    const payload = JSON.parse(Buffer.from(btSplit[1], 'base64').toString('utf8'));
-    console.log('WARNING:', 'supplied token will expire in', payload.exp - (Date.now() / 1000) , 'second(s)');
-    console.log("You will need to regenerate it. You can do so via 'cognigy-vg set token' command.");
-  }
-
   const { accountSid, serviceProviderSid } = await prompts([
-    {
-      type: 'select',
-      name: 'accountSid',
-      message: 'Account you will be working with',
-      choices: accounts.map(({ name, account_sid }) => ({
-        title: name, 
-        value: account_sid
-      })),
-      initial: 0,
-    },
     {
       type: 'select',
       name: 'serviceProviderSid',
@@ -106,6 +90,16 @@ export default async ({ AU }) => {
       choices: serviceProviders.map(({ service_provider_sid, name }) => ({
         title: name, 
         value: service_provider_sid
+      })),
+      initial: 0,
+    },
+    {
+      type: 'select',
+      name: 'accountSid',
+      message: 'Account you will be working with',
+      choices: accounts.map(({ name, account_sid }) => ({
+        title: name, 
+        value: account_sid
       })),
       initial: 0,
     },
@@ -130,7 +124,14 @@ export default async ({ AU }) => {
 
   writeFileSync(
     `./${fileName}`, 
-    JSON.stringify({vgSpacePath, apiFqdn, bearerToken, accountSid, serviceProviderSid, snapEncryptionKey }, null, 2)
+    JSON.stringify({
+      vgSpacePath, 
+      apiFqdn, 
+      serviceProviderToken, 
+      accountSid, 
+      serviceProviderSid, 
+      snapEncryptionKey 
+    }, null, 2)
   );
 
   console.log(`Configuration file generated: ./${fileName}`);

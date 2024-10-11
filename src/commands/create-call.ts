@@ -59,11 +59,19 @@ export default async (_, options: any ) => {
     }
   });
 
+  let apiKeys = await api.getRemoteAccountApiKeys();
+  if(apiKeys.length === 0) {
+    console.log('WARN: No API key found for account', config.accountSid, '. Generating one...');
+    await api.createRemoteAccountApiKey();
+    apiKeys = await api.getRemoteAccountApiKeys();
+  }
+
   await api.createCall(
     from[0] === '+' ? from : `+${from}`, 
     to[0] === '+' ? to : `+${to}`, 
     phones.find(o => o.number === from).application_sid, 
     JSON.parse(tag),
+    apiKeys[0].token
   );
 
   console.log('Done.');

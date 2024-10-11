@@ -1,13 +1,11 @@
 #!/usr/bin/env node
 
 import { Argument, Command } from "commander";
-import { readFileSync } from "fs";
 import initCommand from "./commands/init";
 import pullCommand from "./commands/pull";
 import pushCommand from "./commands/push";
 import cloneCommand from "./commands/clone";
 import snapshotCommand from "./commands/snapshot";
-import setToken from "./commands/set-token";
 import { loadJsonFile } from "./lib";
 import createCallCommand from "./commands/create-call";
 
@@ -28,13 +26,6 @@ program
   .description('Guided way to initialize new configuration file.')
   .option('-AU', 'Allows unauthorized SSL certificates. Useful if your machine is behind VPN.')
   .action(initCommand);
-
-program
-  .command('set token')
-  .description('Quickly set workspace API key/bearer token.')
-  .option('--configFile <string>', 'Configuration file path.', './config.json')
-  .option('-AU', 'Allows unauthorized SSL certificates. Useful if your machine is behind VPN.')
-  .action(setToken);
 
 program
   .command('pull')
@@ -69,10 +60,11 @@ program
 
 program
   .command('snapshot')
-  .description('Create or restore a snapshot remotely.')
-  .addArgument(new Argument('<action>', 'Must be create or restore.').choices(['create', 'restore']))
-  .argument('[snapshotName]', 'Name or path to snapshot. Is required if command is "restore".')
+  .description('Create, restore a snapshot remotely, or inspect it locally.')
+  .addArgument(new Argument('<action>', '').choices(['create', 'restore', 'inspect']))
+  .argument('[snapshotName]', 'Name or path to snapshot. Is required if command is "restore" or "inspect".')
   .option('--configFile <string>', 'Configuration file path.', './config.json')
+  .option('--force', 'Forcefully restore snapshot even if versions mismatch. Can be used with "restore" command.')
   .option('-AU', 'Allows unauthorized SSL certificates. Useful if your machine is behind VPN.')
   .option('-y', 'Skip confirmations.')
   .action(snapshotCommand);
